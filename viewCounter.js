@@ -39,3 +39,18 @@ function getViewCount() {
 }
 
 window.onload = getViewCount;
+
+
+
+fetch('https://4yzlv95nf8.execute-api.eu-west-1.amazonaws.com/prod/trigger', {
+    method: 'GET', 
+})
+.then(response => response.json())
+.then(data => {
+    console.log('Lambda function invoked:', data);  
+})
+.catch(error => {
+    console.error('Error invoking Lambda:', error);  
+});
+
+
