@@ -2,32 +2,21 @@
 
 # My Cloud CV Challenge
 
-**This is my DYNAMIC online CV, hosted as a static website on AWS.**  
+## Introduction / Overview
 
-- The **frontend**, built with **HTML** and **JavaScript**, is stored in an **S3 Bucket** and distributed globally via **CloudFront** for fast loading and enhanced security (**HTTPS** and **DDoS protection**).  
-- The **backend** uses **AWS serverless services**—**API Gateway**, **Lambda**, **DynamoDB**, and **Cognito**—to power a **dynamic view counter** and ensure **scalability**.  
-- The entire pipeline is **automated**, allowing seamless updates to the CV and **real-time tracking** of visitor interactions.
+This project is a dynamic online CV hosted on AWS. It uses a serverless architecture to ensure scalability, security, and real-time updates. The frontend, built with HTML and JavaScript, is hosted on **Amazon S3** and distributed globally via **CloudFront** for fast loading and enhanced security (HTTPS and DDoS protection). The backend leverages **AWS Lambda**, **API Gateway**, and **DynamoDB** to power a live visitor counter, which updates dynamically with each page load. **Amazon Cognito** is used for secure user authentication and authorization.
 
 ---
 
 ## Table of Contents
 
-1. [Introduction](#introduction)
-2. [System Architecture](#system-architecture)
-3. [How It Works](#how-it-works)
+1. [System Architecture](#system-architecture)
+2. [How It Works](#how-it-works)
    - [Frontend](#frontend)
    - [API Gateway](#api-gateway)
    - [Lambda](#lambda)
    - [DynamoDB](#dynamodb)
    - [Cognito](#cognito)
-
----
-
-## Introduction
-
-This application is built using a serverless architecture powered by AWS. It serves as my personal **CV website**, hosted on **Amazon S3** as a static website and distributed through **CloudFront**. The backend utilises **Amazon API Gateway** for routing HTTP requests to trigger an **AWS Lambda** function which is used to update a 'View Counter' figure that is hosted on **Amazon DynamoDB** each time the page is loaded, and **Amazon Cognito** for user authentication and authorisation.
-
-The visitor count data is retrieved from **DynamoDB** using a **JavaScript** file. The script uses **Cognito** guest credentials with restricted access to the **DynamoDB** ViewCount table. This data is then fetched by the **index.html** document to dynamically update and display the live visitor count on the website.
 
 ---
 
@@ -42,7 +31,7 @@ The architecture consists of the following key components:
 - **Amazon DynamoDB**: A NoSQL database that stores application data such as user profiles and session data.
 - **Amazon Cognito**: Provides user authentication and authorisation, ensuring secure access to the application.
 
-![Alt text](./images/architecture.jpg)
+![System Architecture](./images/architecture.jpg)
 ---
 
 ## How It Works
@@ -59,8 +48,8 @@ The architecture consists of the following key components:
 
 ### Lambda
 
-1. **Backend Processing**: After authentication, **Lambda** is triggered to execute, which querys the current view count from **DynamoDB** .
-2. **Data Handling**: Lambda increases the view count by 1 and updates in in the database.
+1. **Backend Processing**: After authentication, **Lambda** is triggered to execute, which queries the current view count from **DynamoDB** .
+2. **Data Handling**: Lambda increases the view count by 1 and updates in the database.
 
 ### DynamoDB
 
