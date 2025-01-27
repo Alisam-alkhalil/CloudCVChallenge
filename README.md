@@ -18,7 +18,7 @@ This project is a dynamic online CV hosted on AWS. It uses a serverless architec
    - [Lambda](#lambda)
    - [DynamoDB](#dynamodb)
    - [Cognito](#cognito)
-3. - [TO DO](#to-do)
+3. [TO DO](#to-do)
 
 ---
 
