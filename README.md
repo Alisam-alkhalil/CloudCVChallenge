@@ -1,4 +1,4 @@
-# [VIEW IT HERE](https://alisamalkhalil.online) <span style="font-size: 0.5em;">*(Test view counter at the bottom of the screen by refreshing the page.)*</span>
+# [VIEW IT HERE](https://alisamalkhalil.online) <sub>*(Test view counter at the bottom of the screen by refreshing the page.)*</sub>
 
 
 # My Cloud CV Challenge
