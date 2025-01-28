@@ -2,26 +2,33 @@ import json
 import boto3
 
 dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table('CVViewCount')
+table = dynamodb.Table('VisitorCountTable')
 
 def lambda_handler(event, context):
-    
-    response = table.get_item(Key={"views": "viewcount"})  
+    try:
+        response = table.get_item(Key={"id": "viewcount"})  
 
-    current_value = response["Item"]["count"]
+        current_value = response["Item"]["count"]
 
-    new_value = current_value + 1
+        new_value = current_value + 1
 
-    table.update_item(
-        Key={"views": "viewcount"},
-        UpdateExpression="SET #count = :new_value",
-        ExpressionAttributeNames={
-            "#count": "count"
-        },
-        ExpressionAttributeValues={
-            ":new_value": new_value
-        }
-    )
+        table.update_item(
+            Key={"id": "viewcount"},
+            UpdateExpression="SET #count = :new_value",
+            ExpressionAttributeNames={
+                "#count": "count"
+            },
+            ExpressionAttributeValues={
+                ":new_value": new_value
+            }
+        )
+    except KeyError:
+        table.put_item(
+            Item={
+                'id': 'viewcount',
+                'count': 1
+            }
+        )
     return {
         'statusCode': 200,
         'body': json.dumps('Hello from Lambda!')

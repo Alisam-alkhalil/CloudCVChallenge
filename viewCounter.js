@@ -1,7 +1,7 @@
 AWS.config.update({
     region: "eu-west-1",
     credentials: new AWS.CognitoIdentityCredentials({
-        IdentityPoolId: "eu-west-1:64f1cd95-58cf-4e40-b40a-0f6511a6d1c2",
+        IdentityPoolId: awsConfig.cognito.identityPoolId,
     }),
 });
 
@@ -9,9 +9,9 @@ const docClient = new AWS.DynamoDB.DocumentClient();
 
 function getViewCount() {
     const params = {
-        TableName: "CVViewCount",  
+        TableName: "VisitorCountTable",  
         Key: {
-            "views": "viewcount"  
+            "id": "viewcount"  
         }
     };
 
@@ -42,7 +42,7 @@ window.onload = getViewCount;
 
 
 
-fetch('https://4yzlv95nf8.execute-api.eu-west-1.amazonaws.com/prod/trigger', {
+fetch(awsConfig.apiGateway.endpoint, {
     method: 'GET', 
 })
 .then(response => response.json())
@@ -52,5 +52,4 @@ fetch('https://4yzlv95nf8.execute-api.eu-west-1.amazonaws.com/prod/trigger', {
 .catch(error => {
     console.error('Error invoking Lambda:', error);  
 });
-
 

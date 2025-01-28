@@ -1,0 +1,223 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Cloud Resume Challenge Infrastructure with Visitor Counter
+
+Parameters:
+  S3BucketName:
+    Type: String
+    Description: Name of the S3 bucket
+  DynamoDBTableName:
+    Type: String
+    Default: "VisitorCountTable"
+  LambdaFunctionName:
+    Type: String
+    Default: "VisitorCounterLambda"
+
+Resources:
+  # Bucket Policy 
+  ResumeBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3BucketName
+      PolicyDocument:
+        Statement:
+          - Sid: PublicReadGetObject
+            Effect: Allow
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "arn:aws:s3:::${S3BucketName}/*"
+
+  # CloudFront Distribution
+  ResumeCDN:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultRootObject: index.html
+        Origins:
+          - DomainName: !Sub "${S3BucketName}.s3-website-${AWS::Region}.amazonaws.com"
+            Id: S3Origin
+            CustomOriginConfig:
+              OriginProtocolPolicy: http-only
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          CachedMethods: [GET, HEAD]
+          AllowedMethods: [GET, HEAD]
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+            Headers: []  
+          CachePolicyId: !Ref NoCachePolicy  
+
+
+  # CloudFront Cache Policy - Disable Caching
+  NoCachePolicy:
+    Type: AWS::CloudFront::CachePolicy
+    Properties:
+      CachePolicyConfig:
+        Comment: "No Cache Policy"
+        Name: "NoCachePolicy"
+        DefaultTTL: 0
+        MaxTTL: 0
+        MinTTL: 0
+        ParametersInCacheKeyAndForwardedToOrigin:
+          EnableAcceptEncodingGzip: false 
+          HeadersConfig:
+            HeaderBehavior: none
+          QueryStringsConfig:
+            QueryStringBehavior: none
+          CookiesConfig:
+            CookieBehavior: none
+
+
+
+  # DynamoDB Table
+  VisitorTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref DynamoDBTableName
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: "HASH"
+      BillingMode: PAY_PER_REQUEST
+
+  # Lambda Execution Role
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [lambda.amazonaws.com]
+            Action: ['sts:AssumeRole']
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+        - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
+
+  # Lambda Function
+  VisitorLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref LambdaFunctionName
+      Runtime: python3.12
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt LambdaRole.Arn
+      Code:
+        S3Bucket: !Ref S3BucketName
+        S3Key: "lambda_function.zip"
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref DynamoDBTableName
+
+  # API Gateway Configuration
+  VisitorAPI:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: VisitorCounterAPI
+      Description: "API for resume visitor counter"
+
+  ApiGatewayMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: GET
+      ResourceId: !GetAtt VisitorAPI.RootResourceId
+      RestApiId: !Ref VisitorAPI
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 
+          - "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations"
+          - LambdaArn: !GetAtt VisitorLambda.Arn
+      MethodResponses:
+        - StatusCode: 200
+
+  LambdaAPIPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !Ref VisitorLambda
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${VisitorAPI}/*/GET/*"
+
+  ApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: ApiGatewayMethod
+    Properties:
+      RestApiId: !Ref VisitorAPI
+      StageName: "prod"
+
+  # Rate Limiting
+  ApiUsagePlan:
+    Type: AWS::ApiGateway::UsagePlan
+    DependsOn: ApiDeployment
+    Properties:
+      UsagePlanName: "VisitorCounterRateLimit"
+      Throttle:
+        RateLimit: 1
+        BurstLimit: 1
+      ApiStages:
+        - ApiId: !Ref VisitorAPI
+          Stage: "prod"
+
+  # Cognito Configuration
+  GuestIdentityPool:
+    Type: AWS::Cognito::IdentityPool
+    Properties:
+      AllowUnauthenticatedIdentities: true
+      IdentityPoolName: "ResumeGuestPool"
+      CognitoIdentityProviders: []
+  
+  CognitoUnauthenticatedRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: cognito-identity.amazonaws.com
+            Action: ['sts:AssumeRoleWithWebIdentity']
+            Condition:
+              StringEquals:
+                cognito-identity.amazonaws.com:aud: !Ref GuestIdentityPool
+
+  CognitoIdentityPoolRoleAttachment:
+    Type: AWS::Cognito::IdentityPoolRoleAttachment
+    Properties:
+      IdentityPoolId: !Ref GuestIdentityPool
+      Roles:
+        unauthenticated: !GetAtt CognitoUnauthenticatedRole.Arn  
+
+  CognitoDynamoReadPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: "CognitoDynamoRead"
+      Roles:
+        - !Ref CognitoUnauthenticatedRole
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - dynamodb:GetItem
+              - dynamodb:Scan
+            Resource: !GetAtt VisitorTable.Arn
+
+Outputs:
+  WebsiteURL:
+    Value: !Sub "http://${S3BucketName}.s3-website-${AWS::Region}.amazonaws.com"
+  CloudFrontDomain:
+    Value: !GetAtt ResumeCDN.DomainName
+  APIGatewayEndpoint:
+    Value: !Sub "https://${VisitorAPI}.execute-api.${AWS::Region}.amazonaws.com/prod"
+  CognitoIdentityPoolId:
+    Value: !Ref GuestIdentityPool
+  DynamoDBTableName:
+    Value: !Ref DynamoDBTableName
