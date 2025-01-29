@@ -5,7 +5,7 @@
 
 ## Introduction / Overview
 
-This project is a dynamic online CV hosted on AWS. It uses a serverless architecture to ensure scalability, security, and real-time updates. The frontend, built with HTML and JavaScript, is hosted on **Amazon S3** and distributed globally via **CloudFront** for fast loading and enhanced security (HTTPS and DDoS protection). The backend leverages **AWS Lambda**, **API Gateway**, and **DynamoDB** to power a live visitor counter, which updates dynamically with each page load. **Amazon Cognito** is used for secure user authentication and authorization.
+This project is a dynamic online CV hosted on AWS. It uses a serverless architecture to ensure fast loading, security, and real-time updates. The frontend, built with HTML and JavaScript, is hosted on **Amazon S3** and distributed globally via **CloudFront** for fast loading and enhanced security (HTTPS and DDoS protection). The backend leverages **AWS Lambda**, **API Gateway**, and **DynamoDB** to power a live visitor counter, which updates dynamically with each page load. **Amazon Cognito** is used for secure user authentication and authorization.
 
 ---
 
@@ -28,10 +28,10 @@ The architecture consists of the following key components:
 
 - **Amazon S3**: Hosts the static frontend of the website.
 - **CloudFront**: Reduces load time and enhances security with HTTPS and DDoS protection.
-- **API Gateway**: Handles incoming HTTP requests, routes them to Lambda functions, and returns the response to the client.
-- **AWS Lambda**: Executes business logic triggered by API Gateway requests, interacting with DynamoDB for data storage and retrieval.
-- **Amazon DynamoDB**: A NoSQL database that stores application data such as user profiles and session data.
-- **Amazon Cognito**: Provides user authentication and authorisation, ensuring secure access to the application.
+- **API Gateway**: Handles incoming HTTP requests, routes them to the Lambda function to update the view count.
+- **AWS Lambda**: Executes python functions triggered by API Gateway requests, interacting with DynamoDB to update the view count.
+- **Amazon DynamoDB**: A NoSQL database that stores the view count.
+- **Amazon Cognito**: Provides user authentication and authorisation limited to only query the view count on DynamoDB.
 
 ![System Architecture](./images/architecture.jpg)
 ---
@@ -41,7 +41,7 @@ The architecture consists of the following key components:
 ### Frontend
 
 1. **User Interaction**: A user triggers an HTTP request by refreshing the page or taking any action that requires interaction with the backend.
-2. **API Request**: The frontend sends an HTTP request to the **API Gateway** with the necessary parameters.
+2. **API Request**: The frontend sends an HTTP request to the **API Gateway**.
 
 ### API Gateway
 
