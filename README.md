@@ -64,11 +64,33 @@ The architecture consists of the following key components:
 ---
 
 
-## TO DO
+## How to Deploy
 
-- **Automate Deployment**:  
-  - Create a **CloudFormation** template to automate the provisioning of AWS resources (S3, CloudFront, API Gateway, Lambda, DynamoDB, etc.).  
-  - Ensure the template is modular and reusable for future updates.
+1. **Clone the Repository**: Clone the repository to your local machine.
+2. **Set up AWS Credentials**: Set up your AWS credentials using the AWS CLI or through the AWS Management Console by using:
+
+```bash
+aws configure
+```
+3. **Change Directory**: Navigate to the cloudformation folder in the cloned directory using:
+
+```bash
+cd cloudformation
+```
+
+4. **IMPORTANT! Change Bucket Name**: Edit the **S3_BUCKET** parameter in the **deploy.sh** file to your desired UNIQUE S3 bucket name. If you wish you can also edit the **STACK_NAME** and **S3_STACK_NAME** parameter to your desired UNIQUE stack name.
+
+5. **Create Stack**: Run the following command to create the CloudFormation stack on a bash terminal:
+
+```bash
+./deploy.sh
+```
+
+6. **View the Site**: Once the stack is deployed, go to CloudFront and view the website at the provided Distribution domain name of the created distribution.
+
+7. **Refresh the Page**: Refresh the page to see the updated view count.
+
+## TO DO
 
 - **Implement CI/CD Pipeline**:  
   - Set up **GitHub Actions** to automate deployments whenever changes are pushed to the repository.  
