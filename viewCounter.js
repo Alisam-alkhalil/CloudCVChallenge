@@ -7,6 +7,10 @@ AWS.config.update({
 
 const docClient = new AWS.DynamoDB.DocumentClient();
 
+/**
+ * Retrieve the current view count from DynamoDB and update the HTML element with the count.
+ * If there is an error or no count is found, display an error message.
+ */
 function getViewCount() {
     const params = {
         TableName: "VisitorCountTable",  
