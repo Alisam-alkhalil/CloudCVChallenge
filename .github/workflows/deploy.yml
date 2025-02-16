@@ -18,7 +18,9 @@ jobs:
           python-version: '3.11'
 
       - name: Set AWS Region
-        run: echo "AWS_REGION=eu-west-1" >> $GITHUB_ENV
+        env: 
+          AWS_DEFAULT_REGION: eu-west-1
+        run: echo "AWS_DEFAULT_REGION set to $AWS_DEFAULT_REGION"
 
       - name: Set PYTHONPATH
         run: echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
