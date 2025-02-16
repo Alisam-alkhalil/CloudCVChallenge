@@ -72,7 +72,7 @@ The architecture consists of the following key components:
 4. **Lambda Function**: The Lambda function is updated with any new code changes.
 
 **Example:**
-![System Architecture](./images/Github%20actions.jpg)
+![System Architecture](./images/githubactions.jpg)
 ---
 
 
