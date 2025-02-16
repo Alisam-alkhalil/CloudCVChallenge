@@ -5,7 +5,7 @@
 
 ## Introduction / Overview
 
-This project is a dynamic online CV hosted on AWS. It uses a serverless architecture to ensure fast loading, security, and real-time updates. The frontend, built with HTML and JavaScript, is hosted on **Amazon S3** and distributed globally via **CloudFront** for fast loading and enhanced security (HTTPS and DDoS protection). The backend leverages **AWS Lambda**, **API Gateway**, and **DynamoDB** to power a live visitor counter, which updates dynamically with each page load. **Amazon Cognito** is used for secure user authentication and authorization.
+This project is a dynamic online CV hosted on AWS. It uses a serverless architecture to ensure fast loading, security, and real-time updates. The frontend, built with HTML and JavaScript, is hosted on **Amazon S3** and distributed globally via **CloudFront** for fast loading and enhanced security (HTTPS and DDoS protection). The backend leverages **AWS Lambda**, **API Gateway**, and **DynamoDB** to power a live visitor counter, which updates dynamically with each page load. **Amazon Cognito** is used for secure user authentication and authorization. The project also includes a CI/CD pipeline using **GitHub Actions** to automate deployments whenever changes are pushed to the repository after completing tests.
 
 ---
 
@@ -18,7 +18,8 @@ This project is a dynamic online CV hosted on AWS. It uses a serverless architec
    - [Lambda](#lambda)
    - [DynamoDB](#dynamodb)
    - [Cognito](#cognito)
-3. [TO DO](#to-do)
+   - [CI/CD Pipeline](#ci/cd-pipeline)
+3. [How to Deploy](#how-to-deploy)
 
 ---
 
@@ -32,6 +33,7 @@ The architecture consists of the following key components:
 - **AWS Lambda**: Executes python functions triggered by API Gateway requests, interacting with DynamoDB to update the view count.
 - **Amazon DynamoDB**: A NoSQL database that stores the view count.
 - **Amazon Cognito**: Provides user authentication and authorisation limited to only query the view count on DynamoDB.
+- **GitHub Actions**: Automates deployments whenever changes are pushed to the repository after completing tests.
 
 ![System Architecture](./images/architecture.jpg)
 ---
@@ -61,10 +63,20 @@ The architecture consists of the following key components:
 ### Cognito
 
 1. **User Authentication**: A guest user on cognito with permissions to only query the view count on DynamoDB is used to access the database through the Javascript file and to update the view count on the html website.
+
+### CI/CD Pipeline
+
+1. **GitHub Actions**: GitHub Actions is used to automate deployments whenever changes are pushed to the repository.
+2. **Testing**: The pipeline includes tests to ensure the pipeline functions as expected.
+3. **Build and Deploy**: After tests are passed, the pipeline deploys the frontend and backend to the S3 bucket and updates the CloudFront distribution.
+4. **Lambda Function**: The Lambda function is updated with any new code changes.
+
+**Example:**
+![System Architecture](./images/Github%20actions.jpg)
 ---
 
 
-## How to Deploy
+### How to Deploy
 
 1. **Clone the Repository**: Clone the repository to your local machine.
 2. **Set up AWS Credentials**: Set up your AWS credentials using the AWS CLI or through the AWS Management Console by using:
@@ -90,19 +102,23 @@ cd cloudformation
 
 7. **Refresh the Page**: Refresh the page to see the updated view count.
 
-## TO DO
 
-- **Implement CI/CD Pipeline**:  
-  - Set up **GitHub Actions** to automate deployments whenever changes are pushed to the repository.  
-  - Configure the pipeline to:  
-    - Build and deploy the frontend to the **S3 Bucket**.  
-    - Update the **CloudFront distribution** to invalidate the cache.  
-    - Deploy backend changes (e.g., Lambda functions, API Gateway configurations).  
+## How to set up CI/CD Pipeline
 
-- **Document the Pipeline**:  
-  - Add clear instructions to the `README.md` for setting up and using the CI/CD pipeline.  
-  - Include troubleshooting tips and best practices.
+1. Create an IAM user with these permissions for the Lambda function and S3 bucket.
 
-- **Testing and Validation**:  
-  - Test the entire pipeline end-to-end to ensure seamless deployments.  
-  - Validate that the **view counter** and other dynamic features work as expected after each deployment.
+```bash
+"lambda:UpdateFunctionCode",
+"lambda:GetFunction",
+"lambda:InvokeFunction,
+"s3:PutObject",
+"s3:DeleteObject",
+"s3:GetObject"
+```
+
+2. Retrieve the user Access key and Secret key.
+On your repository, go to Settings -> Secrets and variables -> Actions -> Add a new secret -> Name: "**ACCESSKEY**" -> Value: "Add your access key" -> Name: "**SECRETKEY**" -> Value: " Add your secret key".
+
+3. Update the S3 bucket name in the **deploy.yml** file located in the .github/workflows folder to your bucket name.
+
+4. Now, you can push to the main branch and the pipeline will deploy the changes to the S3 bucket and update the CloudFront distribution as well as test and deploy the backend code.
