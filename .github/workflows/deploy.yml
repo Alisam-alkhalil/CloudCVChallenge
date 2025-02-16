@@ -8,6 +8,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      s3_bucket: alisam-cv-bucket   # <---UPDATE YOUR S3 BUCKET NAME
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -45,12 +47,13 @@ jobs:
           aws-region: eu-west-1
 
       - name: Deploy Update to S3
-        run: aws s3 sync . s3://alisam-cv-bucket
+        run: aws s3 sync . s3://${{ env.s3_bucket }}
         if: success()
       
       - name: Deploy Update to Lambda with new zip
         run: |
           aws lambda update-function-code \
           --function-name VisitorCounterLambda\
-          --zip-file fileb://lambda_function.zip
+          --s3-bucket ${{ env.s3_bucket }}\
+          --s3-key lambda_function.zip
         if: success()
