@@ -53,6 +53,6 @@ jobs:
       - name: Deploy Update to Lambda with new zip
         run: |
           aws lambda update-function-code \
-          --function-name  VisistorCounterLambda \
+          --function-name  VisitorCounterLambda \
           --zip-file fileb://lambda_function.zip
         if: success()
