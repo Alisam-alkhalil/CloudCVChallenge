@@ -53,9 +53,9 @@ jobs:
       - name: Deploy Update to Lambda with new zip
         run: |
           aws lambda update-function-code \
-          --function-name VisitorCounterLambda\
-          --s3-bucket ${{ env.s3_bucket }}\
-          --s3-key lambda_function.zip
-          --region eu-west-1
+          --function-name VisitorCounterLambda \
+          --s3-bucket ${{ env.s3_bucket }} \ 
+          --s3-key lambda_function.zip \
+          --region eu-west-1 \
           --debug
         if: success()
