@@ -34,6 +34,9 @@ jobs:
         run: |
           pytest tests/test_lambda_function.py
 
+      - name: Zip Lambda Function
+        run: zip -r lambda_function.zip lambda_function.py
+
       - name: Deploy Update to S3
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -43,4 +46,11 @@ jobs:
 
       - name: Deploy Update to S3
         run: aws s3 sync . s3://alisam-cv-bucket
+        if: success()
+      
+      - name: Deploy Update to Lambda with new zip
+        run: |
+          aws lambda update-function-code \
+          --function-name VisitorCounterLambda\
+          --zip-file fileb://lambda_function.zip
         if: success()
