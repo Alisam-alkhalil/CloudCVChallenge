@@ -1,9 +1,8 @@
 import json
 import boto3
 
-
-
-
+dynamodb = boto3.resource('dynamodb', region_name='eu-west-1')
+table = dynamodb.Table('VisitorCountTable')
 
 def lambda_handler(event, context, table):
     """
@@ -23,9 +22,7 @@ def lambda_handler(event, context, table):
     Returns:
         dict: A dictionary containing the status code and a message.
     """
-    dynamodb = boto3.resource('dynamodb', region_name='eu-west-1')
-    table = dynamodb.Table('VisitorCountTable')
-    
+
     try:
         response = table.get_item(Key={"id": "viewcount"})  
 
