@@ -4,7 +4,7 @@ import boto3
 dynamodb = boto3.resource('dynamodb', region_name='eu-west-1')
 table = dynamodb.Table('VisitorCountTable')
 
-def lambda_handler(event, context, table):
+def lambda_handler(event, context, table=table):
     """
     Lambda function that handles updating a view count in a DynamoDB table.
 
