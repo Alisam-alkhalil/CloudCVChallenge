@@ -1,15 +1,12 @@
 import json
 import boto3
 
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table('VisitorCountTable')
 
-def get_dynamodb_resource():
-    dynamodb = boto3.resource('dynamodb', region_name='eu-west-1')
-    table = dynamodb.Table('VisitorCountTable')
-    return table
 
-dynamodb_table = get_dynamodb_resource()
 
-def lambda_handler(event, context, table=None):
+def lambda_handler(event, context, table):
     """
     Lambda function that handles updating a view count in a DynamoDB table.
 
@@ -27,7 +24,7 @@ def lambda_handler(event, context, table=None):
     Returns:
         dict: A dictionary containing the status code and a message.
     """
-    table = dynamodb_table or table
+
     try:
         response = table.get_item(Key={"id": "viewcount"})  
 
